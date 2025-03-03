@@ -1,0 +1,29 @@
+{
+  "name": "7drl-2025",
+  "version": "1.0.0",
+  "description": "It's time for the 2025 7DRL game jam!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KleinFourGroup/7DRL-2025.git"
+  },
+  "author": "Matthew Kilgore",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/KleinFourGroup/7DRL-2025/issues"
+  },
+  "homepage": "https://github.com/KleinFourGroup/7DRL-2025#readme",
+  "dependencies": {
+    "pixi.js": "^8.8.1"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.2",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  }
+}
