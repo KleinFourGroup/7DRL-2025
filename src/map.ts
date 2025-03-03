@@ -27,20 +27,27 @@ function randomTiles(ROWS: number, COLS: number) {
 class GameMap {
     rows: number
     cols: number
+    stage: Container
     backgroundTiles: TileSprite[][]
     background: Container
+    foreground: Container
 
     constructor(rows: number, cols: number, backgroundTiles: TileSprite[][]) {
         this.rows = rows
         this.cols = cols
+        this.stage = new Container()
         this.backgroundTiles = backgroundTiles
         this.background = new Container()
+        this.foreground = new Container()
 
         for (let row of this.backgroundTiles) {
             for (let tile of row) {
                 this.background.addChild(tile.tile)
             }
         }
+
+        this.stage.addChild(this.background)
+        this.stage.addChild(this.foreground)
     }
 }
 

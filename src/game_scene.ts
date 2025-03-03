@@ -16,7 +16,6 @@ class GameScene implements Scene {
     screenH: number
     elapsed: number
     
-    foreground: Container
     gameMap: GameMap
     ind: number
     character: Entity
@@ -26,7 +25,6 @@ class GameScene implements Scene {
     constructor() {
         this.stage = new Container()
         this.debug = new Container()
-        this.foreground = new Container()
         let backgroundTiles = randomTiles(ROWS, COLS)
 
         this.screenW = 1920
@@ -48,9 +46,8 @@ class GameScene implements Scene {
             y: 10
         }
 
-        this.foreground.addChild(this.character.sprite.sprite)
-        this.stage.addChild(this.gameMap.background)
-        this.stage.addChild(this.foreground)
+        this.gameMap.foreground.addChild(this.character.sprite.sprite)
+        this.stage.addChild(this.gameMap.stage)
 
         this.status = SceneStatus.CREATED
     }
@@ -61,6 +58,11 @@ class GameScene implements Scene {
 
     setHeight(size: number): void {
         this.screenH = size
+    }
+
+    setCamera(x: number, y: number) {
+        this.gameMap.stage.x = (this.screenW / 2) - x
+        this.gameMap.stage.y = (this.screenH / 2) - y
     }
 
     tick() {
@@ -120,12 +122,6 @@ class GameScene implements Scene {
             this.lastTick += 1000
         }
     
-        this.gameMap.background.x = (this.screenW - ROWS * 24) / 2
-        this.gameMap.background.y = (this.screenH - COLS * 24) / 2
-    
-        this.foreground.x = (this.screenW - ROWS * 24) / 2
-        this.foreground.y = (this.screenH - COLS * 24) / 2
-    
         let progress = (1 - Math.cos(Math.min((this.elapsed - this.lastTick) / 1000, 1) * Math.PI)) / 2
     
         this.character.sprite.sprite.x = this.character.oldLoc.x * 24 * (1 - progress) + this.character.currLoc.x * 24 * progress
@@ -141,6 +137,8 @@ class GameScene implements Scene {
                 tile.sprite.alpha = 1 - overlap
             }
         }
+    
+        this.setCamera(this.character.sprite.sprite.x + 12, this.character.sprite.sprite.y + 12)
     }
 }
 
