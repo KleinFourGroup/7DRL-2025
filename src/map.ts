@@ -1,7 +1,7 @@
 
 import { Container } from "pixi.js"
 import { COLORS } from "./colors"
-import { TileSprite } from "./text_sprite"
+import { TILE_SIZE, TileSprite } from "./text_sprite"
 
 function randomTiles(ROWS: number, COLS: number) {
     let backgroundSprites: TileSprite[][] = []
@@ -16,7 +16,7 @@ function randomTiles(ROWS: number, COLS: number) {
                 COLORS["terminal green"],
                 typeBack === 1 ? COLORS["dark terminal green"] : COLORS["dark terminal amber"]
             )
-            tile.tile.position.set(row * 24, col* 24)
+            tile.tile.position.set(row * TILE_SIZE, col * TILE_SIZE)
             backgroundSprites[row].push(tile)
         }
     }

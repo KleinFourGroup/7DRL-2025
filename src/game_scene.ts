@@ -2,6 +2,7 @@ import { Container, ContainerChild, Ticker } from "pixi.js"
 import { Scene, SceneStatus } from "./scenes"
 import { Entity } from "./entities"
 import { GameMap, randomTiles } from "./map"
+import { TILE_SIZE } from "./text_sprite"
     
 const ROWS = 41
 const COLS = 21
@@ -124,21 +125,21 @@ class GameScene implements Scene {
     
         let progress = (1 - Math.cos(Math.min((this.elapsed - this.lastTick) / 1000, 1) * Math.PI)) / 2
     
-        this.character.sprite.sprite.x = this.character.oldLoc.x * 24 * (1 - progress) + this.character.currLoc.x * 24 * progress
-        this.character.sprite.sprite.y = this.character.oldLoc.y * 24 * (1 - progress) + this.character.currLoc.y * 24 * progress
+        this.character.sprite.sprite.x = this.character.oldLoc.x * TILE_SIZE * (1 - progress) + this.character.currLoc.x * TILE_SIZE * progress
+        this.character.sprite.sprite.y = this.character.oldLoc.y * TILE_SIZE * (1 - progress) + this.character.currLoc.y * TILE_SIZE * progress
     
         for (let row = 0; row < ROWS; row++) {
             for (let col = 0; col < COLS; col++) {
                 let tile = this.gameMap.backgroundTiles[row][col]
-                let overlapX = Math.max(0, 24 + Math.min(tile.tile.x, this.character.sprite.sprite.x) - Math.max(tile.tile.x, this.character.sprite.sprite.x))
-                let overlapY = Math.max(0, 24 + Math.min(tile.tile.y, this.character.sprite.sprite.y) - Math.max(tile.tile.y, this.character.sprite.sprite.y))
+                let overlapX = Math.max(0, TILE_SIZE + Math.min(tile.tile.x, this.character.sprite.sprite.x) - Math.max(tile.tile.x, this.character.sprite.sprite.x))
+                let overlapY = Math.max(0, TILE_SIZE + Math.min(tile.tile.y, this.character.sprite.sprite.y) - Math.max(tile.tile.y, this.character.sprite.sprite.y))
     
-                let overlap = Math.min(overlapX, overlapY) / 24
+                let overlap = Math.min(overlapX, overlapY) / TILE_SIZE
                 tile.sprite.alpha = 1 - overlap
             }
         }
     
-        this.setCamera(this.character.sprite.sprite.x + 12, this.character.sprite.sprite.y + 12)
+        this.setCamera(this.character.sprite.sprite.x + TILE_SIZE / 2, this.character.sprite.sprite.y + TILE_SIZE / 2)
     }
 }
 
