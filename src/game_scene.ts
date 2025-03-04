@@ -1,8 +1,9 @@
-import { Container, ContainerChild, Ticker } from "pixi.js"
+import { Container, ContainerChild, Ticker, Text } from "pixi.js"
 import { Scene, SceneStatus } from "./scenes"
 import { Entity } from "./entities"
 import { GameMap, randomTiles } from "./map"
 import { TILE_SIZE } from "./text_sprite"
+import { COLORS } from "./colors"
     
 const ROWS = 41
 const COLS = 21
@@ -18,6 +19,7 @@ class GameScene implements Scene {
     elapsed: number
     
     gameMap: GameMap
+    debugText: Text
     ind: number
     character: Entity
     
@@ -26,6 +28,13 @@ class GameScene implements Scene {
     constructor() {
         this.stage = new Container()
         this.debug = new Container()
+        this.debugText = new Text({
+            style: {
+                fill: COLORS["terminal green"]
+            }
+        })
+        this.debug.addChild(this.debugText)
+        this.debugText.position.set(10, 10)
         let backgroundTiles = randomTiles(ROWS, COLS)
 
         this.screenW = 1920
@@ -53,17 +62,18 @@ class GameScene implements Scene {
         this.status = SceneStatus.CREATED
     }
 
-    setWidth(size: number): void {
-        this.screenW = size
-    }
+    setSize(width: number, height: number): void {
+        this.screenW = width
+        this.screenH = height
 
-    setHeight(size: number): void {
-        this.screenH = size
+        let scale = Math.hypot(this.screenW, this.screenH) / (25 * TILE_SIZE)
+        this.debugText.text = `Scale: ${(scale * 100).toFixed(2)}%` 
+        this.stage.scale = scale
     }
 
     setCamera(x: number, y: number) {
-        this.gameMap.stage.x = (this.screenW / 2) - x
-        this.gameMap.stage.y = (this.screenH / 2) - y
+        this.stage.position.set(this.screenW / 2, this.screenH / 2)
+        this.gameMap.stage.position.set(-x, -y)
     }
 
     tick() {

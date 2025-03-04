@@ -68,8 +68,7 @@ class SceneManager {
     update(ticker: Ticker) {
         this.elapsed += ticker.deltaMS
         if (this.currScene !== null) {
-            this.currScene.setWidth(this.app.renderer.width)
-            this.currScene.setHeight(this.app.renderer.height)
+            this.currScene.setSize(this.app.renderer.width, this.app.renderer.height)
             this.currScene.update(ticker)
         }
     }

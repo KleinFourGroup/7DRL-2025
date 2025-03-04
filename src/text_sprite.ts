@@ -1,6 +1,6 @@
 import { Container, Graphics, Sprite, Texture } from "pixi.js"
 
-const TILE_SIZE = 64
+const TILE_SIZE = 128
 
 class TextSprite {
     text: string
