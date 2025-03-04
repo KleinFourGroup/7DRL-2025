@@ -1,4 +1,4 @@
-import { Container, ContainerChild, Ticker, Text } from "pixi.js"
+import { Container, ContainerChild, Ticker, Text, Rectangle } from "pixi.js"
 import { Scene, SceneStatus } from "./scenes"
 import { Entity } from "./entities"
 import { GameMap, randomTiles } from "./map"
@@ -18,6 +18,11 @@ class GameScene implements Scene {
     screenH: number
     elapsed: number
     
+    gameStage: Container
+    ui: Container
+
+    zoom: number
+
     gameMap: GameMap
     debugText: Text
     ind: number
@@ -42,6 +47,20 @@ class GameScene implements Scene {
 
         this.elapsed = 0.0
         this.lastTick = 0.0
+
+        this.zoom = 100
+
+        this.gameStage = new Container()
+        this.ui = new Container()
+        this.ui.eventMode = "static"
+        this.ui.hitArea = new Rectangle(0, 0, this.screenW, this.screenH)
+        this.ui.on("wheel", (event) => {
+            this.zoom += (event.deltaY / 5)
+            this.zoom = Math.max(75, Math.min(200, this.zoom))
+        })
+        this.ui.on("pointerdown", (event) => {
+            console.log(event.x)
+        })
         
         this.gameMap = new GameMap(ROWS, COLS, backgroundTiles)
         this.ind = -1
@@ -57,22 +76,28 @@ class GameScene implements Scene {
         }
 
         this.gameMap.foreground.addChild(this.character.sprite.sprite)
-        this.stage.addChild(this.gameMap.stage)
+        this.gameStage.addChild(this.gameMap.stage)
+
+        this.stage.addChild(this.gameStage)
+        this.stage.addChild(this.ui)
 
         this.status = SceneStatus.CREATED
     }
 
     setSize(width: number, height: number): void {
-        this.screenW = width
-        this.screenH = height
+        this.screenW = width;
+        this.screenH = height;
+
+        (this.ui.hitArea as Rectangle).width = this.screenW;
+        (this.ui.hitArea as Rectangle).height = this.screenH;
 
         let scale = Math.hypot(this.screenW, this.screenH) / (25 * TILE_SIZE)
         this.debugText.text = `Scale: ${(scale * 100).toFixed(2)}%` 
-        this.stage.scale = scale
+        this.gameStage.scale = scale * (this.zoom / 100)
     }
 
     setCamera(x: number, y: number) {
-        this.stage.position.set(this.screenW / 2, this.screenH / 2)
+        this.gameStage.position.set(this.screenW / 2, this.screenH / 2)
         this.gameMap.stage.position.set(-x, -y)
     }
 

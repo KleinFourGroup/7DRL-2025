@@ -22,7 +22,7 @@ interface Scene {
     suspendScene(): void
     resumeScene(): void
 
-    setSize(x: number, y: number): void
+    setSize(width: number, height: number): void
 
     update(ticker: Ticker): void
 }
