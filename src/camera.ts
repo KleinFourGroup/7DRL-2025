@@ -1,6 +1,8 @@
 import { Container } from "pixi.js";
 import { GameScene } from "./game_scene";
 
+const MIN_ZOOM = 75
+const MAX_ZOOM = 200
 
 class Camera {
     scene: GameScene
@@ -29,7 +31,7 @@ class Camera {
 
     deltaZoom(val: number) {
         this.zoom += val
-        this.zoom = Math.max(75, Math.min(200, this.zoom))
+        this.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, this.zoom))
     }
 
     setSize(): void {

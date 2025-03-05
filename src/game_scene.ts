@@ -5,6 +5,7 @@ import { GameMap, randomTiles } from "./map"
 import { TILE_SIZE } from "./text_sprite"
 import { COLORS } from "./colors"
 import { Camera } from "./camera"
+import { Animation, createMessageAnimation } from "./animation"
     
 const ROWS = 41
 const COLS = 21
@@ -26,6 +27,7 @@ class GameScene implements Scene {
     debugText: Text
     ind: number
     character: Entity
+    characterAnimation: Animation
     
     lastTick: number
 
@@ -71,6 +73,9 @@ class GameScene implements Scene {
             x: 20,
             y: 10
         }
+
+        this.characterAnimation = createMessageAnimation(this.character, MESSAGE, 1000)
+        this.characterAnimation.init()
 
         this.gameMap.foreground.addChild(this.character.sprite.sprite)
         this.camera.innerStage.addChild(this.gameMap.stage)
@@ -123,11 +128,6 @@ class GameScene implements Scene {
                 searching = false
             }
         }
-    
-        this.ind = (this.ind + 1) % MESSAGE.length
-        this.character.sprite.text = MESSAGE[this.ind]
-        this.character.sprite.redraw()
-        this.character.sprite.sprite.texture.source.update()
     }
 
     initScene(): void {
@@ -164,6 +164,8 @@ class GameScene implements Scene {
                 tile.sprite.alpha = 1 - overlap
             }
         }
+
+        this.characterAnimation.animate(ticker.deltaMS)
     
         this.camera.setPos(this.character.sprite.sprite.x + TILE_SIZE / 2, this.character.sprite.sprite.y + TILE_SIZE / 2)
     }
