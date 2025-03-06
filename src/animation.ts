@@ -22,6 +22,7 @@ class Animation {
     constructor(animation: AnimationData, target: Entity, scene: GameScene, loop: boolean) {
         console.assert(animation.keyframes.length === animation.frameAnimations.length)
         console.assert(animation.keyframes.length === animation.betweenAnimations.length + 1)
+        console.assert(animation.keyframes[0] === 0)
         if (loop) {
             console.assert(animation.frameAnimations[0] === null || animation.frameAnimations[animation.frameAnimations.length - 1] === null)
         }
