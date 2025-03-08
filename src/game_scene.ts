@@ -5,7 +5,7 @@ import { GameMap, randomTiles } from "./map"
 import { TILE_SIZE } from "./text_sprite"
 import { COLORS } from "./colors"
 import { Camera } from "./camera"
-import { Animation, createMessageAnimation } from "./animation"
+import { KeyframedAnimation, createMessageAnimation } from "./animation"
     
 const ROWS = 41
 const COLS = 21
@@ -27,7 +27,7 @@ class GameScene implements Scene {
     debugText: Text
     ind: number
     character: Entity
-    characterAnimation: Animation
+    characterAnimation: KeyframedAnimation
     
     lastTick: number
 
@@ -64,7 +64,7 @@ class GameScene implements Scene {
         this.gameMap = new GameMap(ROWS, COLS, backgroundTiles)
         this.ind = -1
         
-        this.character = new Entity("@@")
+        this.character = new Entity("@@", this)
         this.character.currLoc = {
             x: 20,
             y: 10
@@ -74,7 +74,7 @@ class GameScene implements Scene {
             y: 10
         }
 
-        this.characterAnimation = createMessageAnimation(this.character, MESSAGE, 1000)
+        this.characterAnimation = createMessageAnimation(this.character, MESSAGE, 200)
         this.characterAnimation.init()
 
         this.gameMap.foreground.addChild(this.character.sprite.sprite)

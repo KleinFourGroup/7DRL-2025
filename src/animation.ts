@@ -1,17 +1,18 @@
-import { Entity } from "./entities";
+import { Entity, Position } from "./entities";
 import { GameScene } from "./game_scene";
+import { TILE_SIZE } from "./text_sprite";
 
 type AnimationInterval = (time: number, target: Entity, scene: GameScene) => void
 type AnimationFrame = (target: Entity, scene: GameScene) => void
 
-type AnimationData = {
+type KeyframedAnimationData = {
     keyframes: number[]
     frameAnimations: AnimationFrame[]
     betweenAnimations: AnimationInterval[]
 }
 
-class Animation {
-    animation: AnimationData
+class KeyframedAnimation {
+    animation: KeyframedAnimationData
     target: Entity
     scene: GameScene
     loop: boolean
@@ -19,7 +20,7 @@ class Animation {
     loopNum: number
     lastKeyframe: number
 
-    constructor(animation: AnimationData, target: Entity, scene: GameScene, loop: boolean) {
+    constructor(animation: KeyframedAnimationData, target: Entity, scene: GameScene, loop: boolean) {
         console.assert(animation.keyframes.length === animation.frameAnimations.length)
         console.assert(animation.keyframes.length === animation.betweenAnimations.length + 1)
         console.assert(animation.keyframes[0] === 0)
@@ -39,11 +40,23 @@ class Animation {
         return this.animation.keyframes[this.animation.keyframes.length - 1]
     }
 
-    init() {
-        if (this.animation.frameAnimations[0] !== null) {
-            this.animation.frameAnimations[0](this.target, this.scene)
+    init(deltaTime: number = 0) {
+        this.animate(deltaTime)
+    }
+
+    finish(deltaTime: number) {
+        console.assert(!this.loop)
+
+        this.lastKeyframe++
+
+        while (this.lastKeyframe < this.animation.keyframes.length) {
+            // console.log(`Processing frame ${frameInd}`)
+            if (this.animation.frameAnimations[this.lastKeyframe] !== null) {
+                this.animation.frameAnimations[this.lastKeyframe](this.target, this.scene)
+            }
+            this.elapsed = this.duration
+            this.lastKeyframe++
         }
-        this.lastKeyframe = 0
     }
 
     animate(deltaTime: number) {
@@ -79,7 +92,10 @@ class Animation {
                 console.assert(this.elapsed >= this.duration)
                 this.elapsed -= this.duration
                 processedTime = 0
-                this.init()
+                if (this.animation.frameAnimations[0] !== null) {
+                    this.animation.frameAnimations[0](this.target, this.scene)
+                }
+                this.lastKeyframe = 0
             }
 
             // console.log(`${processedTime} / ${this.elapsed}`)
@@ -108,15 +124,44 @@ function createMessageAnimation(character: Entity, text: string, step: number = 
     }
     frameAnimations.push(null)
 
-    let animation: AnimationData = {
+    let animation: KeyframedAnimationData = {
         keyframes: keyframes,
         frameAnimations: frameAnimations,
         betweenAnimations: betweenAnimations
     }
 
-    return new Animation(animation, character, null, true)
+    return new KeyframedAnimation(animation, character, null, true)
 }
 
-export { AnimationInterval, AnimationFrame, AnimationData }
-export { Animation }
-export { createMessageAnimation }
+function createMoveAnimation(character: Entity, oldLoc: Position, newLoc: Position, duration: number = 1000) {
+    function startFrame(target: Entity, scene: GameScene) {
+        target.sprite.sprite.x = oldLoc.x * TILE_SIZE
+        target.sprite.sprite.y = oldLoc.y * TILE_SIZE
+    }
+
+    function endFrame(target: Entity, scene: GameScene) {
+        target.sprite.sprite.x = newLoc.x * TILE_SIZE
+        target.sprite.sprite.y = newLoc.y * TILE_SIZE
+    }
+
+    function betweenFrame(time: number, target: Entity, scene: GameScene) {
+        let progress = (1 - Math.cos(Math.min(time / duration, 1) * Math.PI)) / 2
+        target.sprite.sprite.x = oldLoc.x * TILE_SIZE * (1 - progress) + newLoc.x * TILE_SIZE * progress
+        target.sprite.sprite.y = oldLoc.y * TILE_SIZE * (1 - progress) + newLoc.y * TILE_SIZE * progress
+    }
+    let keyframes: number[] = [0, duration]
+    let frameAnimations: AnimationFrame[] = [startFrame, endFrame]
+    let betweenAnimations: AnimationInterval[] = [betweenFrame]
+
+    let animation: KeyframedAnimationData = {
+        keyframes: keyframes,
+        frameAnimations: frameAnimations,
+        betweenAnimations: betweenAnimations
+    }
+
+    return new KeyframedAnimation(animation, character, null, true)
+}
+
+export { AnimationInterval, AnimationFrame, KeyframedAnimationData }
+export { KeyframedAnimation }
+export { createMessageAnimation, createMoveAnimation }
