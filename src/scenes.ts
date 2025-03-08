@@ -1,4 +1,4 @@
-import { Container, Ticker } from "pixi.js";
+import { Application, Container, Ticker } from "pixi.js";
 
 enum SceneStatus {
     CREATED,
@@ -9,6 +9,7 @@ enum SceneStatus {
 }
 
 interface Scene {
+    app: Application
     stage: Container
     debug: Container
     status: SceneStatus

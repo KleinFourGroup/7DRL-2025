@@ -1,8 +1,9 @@
 import { Container } from "pixi.js";
 import { GameScene } from "./game_scene";
 
-const MIN_ZOOM = 75
+const MIN_ZOOM = 70
 const MAX_ZOOM = 200
+const ZOOM_STEP = 10
 
 class Camera {
     scene: GameScene
@@ -29,6 +30,10 @@ class Camera {
         this.setSize()
     }
 
+    get roundZoom() {
+        return Math.round(this.zoom / ZOOM_STEP) * ZOOM_STEP
+    }
+
     deltaZoom(val: number) {
         this.zoom += val
         this.zoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, this.zoom))
@@ -36,7 +41,7 @@ class Camera {
 
     setSize(): void {
         this.scale = Math.hypot(this.scene.screenW, this.scene.screenH) / this.size
-        this.outerStage.scale = this.scale * (this.zoom / 100)
+        this.outerStage.scale = this.scale * (this.roundZoom / 100)
     }
 
     setPos(x: number, y: number) {

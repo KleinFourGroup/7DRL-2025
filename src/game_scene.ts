@@ -1,4 +1,4 @@
-import { Container, Ticker, Text, Rectangle } from "pixi.js"
+import { Container, Ticker, Text, Rectangle, Application } from "pixi.js"
 import { Scene, SceneStatus } from "./scenes"
 import { Entity } from "./entities"
 import { GameMap, randomTiles } from "./map"
@@ -7,6 +7,7 @@ import { COLORS } from "./colors"
 import { Camera } from "./camera"
 import { KeyframedAnimation, createMessageAnimation } from "./animation"
 import { createMoveAction, TICK_GRANULARITY } from "./action"
+import { PerfManager } from "./perf"
     
 const ROWS = 41
 const COLS = 21
@@ -14,6 +15,7 @@ const MESSAGE = "TESTING"
 
 
 class GameScene implements Scene {
+    app: Application
     stage: Container
     debug: Container
     status: SceneStatus
@@ -33,7 +35,10 @@ class GameScene implements Scene {
     tickLength: number
     lastTick: number
 
-    constructor() {
+    perfManager: PerfManager
+
+    constructor(app: Application) {
+        this.app = app
         this.stage = new Container()
         this.debug = new Container()
         this.debugText = new Text({
@@ -72,10 +77,6 @@ class GameScene implements Scene {
             x: 20,
             y: 10
         }
-        this.character.oldLoc = {
-            x: 20,
-            y: 10
-        }
 
         this.characterAnimation = createMessageAnimation(this.character, MESSAGE, 200)
         this.characterAnimation.init()
@@ -87,6 +88,8 @@ class GameScene implements Scene {
         this.stage.addChild(this.ui)
 
         this.status = SceneStatus.CREATED
+
+        this.perfManager = new PerfManager(app)
     }
 
     setSize(width: number, height: number): void {
@@ -97,7 +100,6 @@ class GameScene implements Scene {
         this.screenH = height;
 
         this.camera.setSize()
-        this.debugText.text = `Scale: ${(this.camera.scale * 100).toFixed(2)}%`
     }
 
     tickAI() {
@@ -158,6 +160,8 @@ class GameScene implements Scene {
     }
 
     update(ticker: Ticker): void {
+        this.perfManager.beginFrame()
+        this.perfManager.beginWork()
         this.elapsed += ticker.deltaMS
         if (this.elapsed - this.lastTick >= this.tickLength) {
             this.lastTick += this.tickLength
@@ -168,6 +172,8 @@ class GameScene implements Scene {
         this.characterAnimation.animate(ticker.deltaMS)
     
         this.camera.setPos(this.character.sprite.sprite.x + TILE_SIZE / 2, this.character.sprite.sprite.y + TILE_SIZE / 2)
+        this.perfManager.endWork()
+        this.debugText.text = `Frame: ${this.perfManager.avgFrame.toFixed(2)} (${this.perfManager.maxFrame.toFixed(2)})\nLoad: ${(this.perfManager.avgLoad * 100).toFixed(2)}% (${(this.perfManager.maxLoad * 100).toFixed(2)}%)\nScale: ${(this.camera.scale * 100).toFixed(2)}% / Zoom: ${this.camera.roundZoom}%`
     }
 }
 

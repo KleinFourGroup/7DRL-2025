@@ -18,7 +18,7 @@ document.body.appendChild(app.canvas)
 
 let sceneManager = new SceneManager(app)
 
-let gameScene = new GameScene()
+let gameScene = new GameScene(app)
 
 sceneManager.addScene(gameScene)
 sceneManager.setScene(gameScene)
