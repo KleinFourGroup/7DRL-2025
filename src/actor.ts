@@ -1,4 +1,4 @@
-import { CompoundAction, TickAction } from "./action"
+import { CompoundAction, TICK_GRANULARITY, TickAction } from "./action"
 import { Entity } from "./entities"
 
 class Actor {
@@ -6,20 +6,26 @@ class Actor {
     actionQueue: CompoundAction[]
     currAction: CompoundAction
     tickAction: TickAction
+    freshAnimation: boolean
     constructor(entity: Entity) {
         this.entity = entity
 
         this.actionQueue = []
         this.currAction = null
         this.tickAction = null
+        this.freshAnimation = false
     }
 
     get scene() {
         return this.entity.scene
     }
 
+    isIdle() {
+        return this.currAction === null
+    }
+
     processCurrentAction() {
-        let isDone = this.currAction.tick()
+        let isDone = this.currAction?.tick()
         if (isDone) {
             this.currAction = null
         }
@@ -27,7 +33,11 @@ class Actor {
 
     animateCurrentAction(deltaTime: number) {
         if (this.currAction?.animation !== null) {
-            this.currAction.animation.animate(deltaTime)
+            if (!this.freshAnimation) {
+                this.currAction.animation.animate(deltaTime)
+            } else {
+                this.freshAnimation = false
+            }
         }
     }
 
@@ -36,7 +46,7 @@ class Actor {
         this.actionQueue.push(action)
     }
 
-    processQueue(initMS: number) {
+    processQueue(initTime: number) {
         if (this.currAction === null && this.actionQueue.length > 0) {
             this.currAction = this.actionQueue.shift()
 
@@ -44,7 +54,8 @@ class Actor {
                 // Initialize it!
                 this.currAction.tick()
                 if (this.currAction.animation !== null) {
-                    this.currAction.animation.init(initMS)
+                    this.currAction.animation.init(initTime)
+                    this.freshAnimation = true
                 }
             }
         }

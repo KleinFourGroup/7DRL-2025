@@ -6,6 +6,7 @@ import { TILE_SIZE } from "./text_sprite"
 import { COLORS } from "./colors"
 import { Camera } from "./camera"
 import { KeyframedAnimation, createMessageAnimation } from "./animation"
+import { createMoveAction, TICK_GRANULARITY } from "./action"
     
 const ROWS = 41
 const COLS = 21
@@ -29,6 +30,7 @@ class GameScene implements Scene {
     character: Entity
     characterAnimation: KeyframedAnimation
     
+    tickLength: number
     lastTick: number
 
     constructor() {
@@ -49,6 +51,7 @@ class GameScene implements Scene {
         this.elapsed = 0.0
         this.lastTick = 0.0
 
+        this.tickLength = 50
 
         this.camera = new Camera(this, 25 * TILE_SIZE)
         this.ui = new Container()
@@ -97,41 +100,54 @@ class GameScene implements Scene {
         this.debugText.text = `Scale: ${(this.camera.scale * 100).toFixed(2)}%`
     }
 
-    tick() {
-        this.character.oldLoc.x = this.character.currLoc.x
-        this.character.oldLoc.y = this.character.currLoc.y
-        let searching = true
-        while (searching) {
-            let rand = Math.floor(Math.random() * 4)
-            let dx = 0
-            let dy = 0
-            switch (rand) {
-                case 0:
-                    dx = -1
-                    break
-                case 1:
-                    dy = 1
-                    break
-                case 2:
-                    dx = 1
-                    break
-                case 3:
-                    dy = -1
-                    break
-                default:
-                    console.error("Uh oh...")
+    tickAI() {
+        if (this.character.actor.isIdle()) {
+            let oldLoc = {...this.character.currLoc}
+            let newLoc = {...this.character.currLoc}
+            let searching = true
+            while (searching) {
+                let rand = Math.floor(Math.random() * 4)
+                let dx = 0
+                let dy = 0
+                switch (rand) {
+                    case 0:
+                        dx = -1
+                        break
+                    case 1:
+                        dy = 1
+                        break
+                    case 2:
+                        dx = 1
+                        break
+                    case 3:
+                        dy = -1
+                        break
+                    default:
+                        console.error("Uh oh...")
+                }
+        
+                if (0 <= oldLoc.x + dx && oldLoc.x + dx < ROWS && 0 <= oldLoc.y + dy && oldLoc.y + dy < COLS) {
+                    newLoc.x += dx
+                    newLoc.y += dy
+                    searching = false
+                }
             }
-    
-            if (0 <= this.character.currLoc.x + dx && this.character.currLoc.x + dx < ROWS && 0 <= this.character.currLoc.y + dy && this.character.currLoc.y + dy < COLS) {
-                this.character.currLoc.x += dx
-                this.character.currLoc.y += dy
-                searching = false
-            }
+
+            let action = createMoveAction(this.character, oldLoc, newLoc, Math.ceil(600 / this.tickLength))
+            this.character.actor.queueAction(action)
         }
+
+    }
+
+    tick(deltaMS: number) {
+        this.character.actor.processCurrentAction()
+        this.tickAI()
+        this.character.actor.processQueue(deltaMS)
+        this.character.actor.doTickAction()
     }
 
     initScene(): void {
-        this.tick()
+        this.tick(0)
         this.status = SceneStatus.INITIALIZED
     }
     suspendScene(): void {
@@ -142,29 +158,13 @@ class GameScene implements Scene {
     }
 
     update(ticker: Ticker): void {
-
         this.elapsed += ticker.deltaMS
-        if (this.elapsed - this.lastTick >= 1000) {
-            this.tick()
-            this.lastTick += 1000
-        }
-    
-        let progress = (1 - Math.cos(Math.min((this.elapsed - this.lastTick) / 1000, 1) * Math.PI)) / 2
-    
-        this.character.sprite.sprite.x = this.character.oldLoc.x * TILE_SIZE * (1 - progress) + this.character.currLoc.x * TILE_SIZE * progress
-        this.character.sprite.sprite.y = this.character.oldLoc.y * TILE_SIZE * (1 - progress) + this.character.currLoc.y * TILE_SIZE * progress
-    
-        for (let row = 0; row < ROWS; row++) {
-            for (let col = 0; col < COLS; col++) {
-                let tile = this.gameMap.backgroundTiles[row][col]
-                let overlapX = Math.max(0, TILE_SIZE + Math.min(tile.tile.x, this.character.sprite.sprite.x) - Math.max(tile.tile.x, this.character.sprite.sprite.x))
-                let overlapY = Math.max(0, TILE_SIZE + Math.min(tile.tile.y, this.character.sprite.sprite.y) - Math.max(tile.tile.y, this.character.sprite.sprite.y))
-    
-                let overlap = Math.min(overlapX, overlapY) / TILE_SIZE
-                tile.sprite.alpha = 1 - overlap
-            }
+        if (this.elapsed - this.lastTick >= this.tickLength) {
+            this.lastTick += this.tickLength
+            this.tick((this.elapsed - this.lastTick) * TICK_GRANULARITY / this.tickLength)
         }
 
+        this.character.actor.animateCurrentAction(ticker.deltaMS * TICK_GRANULARITY / this.tickLength)
         this.characterAnimation.animate(ticker.deltaMS)
     
         this.camera.setPos(this.character.sprite.sprite.x + TILE_SIZE / 2, this.character.sprite.sprite.y + TILE_SIZE / 2)

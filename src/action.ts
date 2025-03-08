@@ -2,6 +2,8 @@ import { createMoveAnimation, KeyframedAnimation } from "./animation"
 import { Entity, Position } from "./entities"
 import { GameScene } from "./game_scene"
 
+const TICK_GRANULARITY = 100
+
 type TickAction = (target: Entity, scene: GameScene) => void
 
 type ActionSequence = {
@@ -34,6 +36,7 @@ class CompoundAction {
                 this.target.actor.prepTickAction(this.actions.events[this.lastActionInd])
             }
         }
+        this.currTick++
         return (this.lastActionInd === this.actions.keyframes.length - 1)
     }
 }
@@ -49,10 +52,12 @@ function createMoveAction(character: Entity, oldLoc: Position, newLoc: Position,
         keyframes: keyframes,
         events: events
     }
-    let animation = createMoveAnimation(character, oldLoc, newLoc, duration * 1000)
+    let animation = createMoveAnimation(character, oldLoc, newLoc, duration * TICK_GRANULARITY)
 
     return new CompoundAction(actions, character, character.scene, animation)
 }
 
+export {TICK_GRANULARITY}
 export {TickAction, ActionSequence}
 export {CompoundAction}
+export {createMoveAction}

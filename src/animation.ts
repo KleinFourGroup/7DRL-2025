@@ -45,7 +45,9 @@ class KeyframedAnimation {
     }
 
     finish(deltaTime: number) {
-        console.assert(!this.loop)
+        if (this.loop) {
+            return
+        }
 
         this.lastKeyframe++
 
@@ -80,7 +82,8 @@ class KeyframedAnimation {
             // We aren't done and we had more frames left
             if (processedTime < this.elapsed && this.lastKeyframe < this.animation.keyframes.length - 1) {
                 // console.log(`Processing between frames ${this.lastKeyframe}-${this.lastKeyframe + 1}`)
-                let overflow = this.elapsed - processedTime
+                
+                let overflow = this.elapsed - this.animation.keyframes[this.lastKeyframe]
                 processedTime = this.elapsed
                 if (this.animation.betweenAnimations[this.lastKeyframe] !== null) {
                     this.animation.betweenAnimations[this.lastKeyframe](overflow, this.target, this.scene)
@@ -159,7 +162,7 @@ function createMoveAnimation(character: Entity, oldLoc: Position, newLoc: Positi
         betweenAnimations: betweenAnimations
     }
 
-    return new KeyframedAnimation(animation, character, null, true)
+    return new KeyframedAnimation(animation, character, null, false)
 }
 
 export { AnimationInterval, AnimationFrame, KeyframedAnimationData }
