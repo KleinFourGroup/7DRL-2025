@@ -2,6 +2,7 @@
 import { Container } from "pixi.js"
 import { COLORS } from "./colors"
 import { TILE_SIZE, TileSprite } from "./text_sprite"
+import { Position } from "./ecs"
 
 function randomTiles(ROWS: number, COLS: number) {
     let backgroundSprites: TileSprite[][] = []
@@ -29,25 +30,33 @@ class GameMap {
     cols: number
     stage: Container
     backgroundTiles: TileSprite[][]
-    background: Container
-    foreground: Container
+    tileStage: Container
+    entityStage: Container
 
     constructor(rows: number, cols: number, backgroundTiles: TileSprite[][]) {
         this.rows = rows
         this.cols = cols
         this.stage = new Container()
         this.backgroundTiles = backgroundTiles
-        this.background = new Container()
-        this.foreground = new Container()
+        this.tileStage = new Container()
+        this.entityStage = new Container()
 
         for (let row of this.backgroundTiles) {
             for (let tile of row) {
-                this.background.addChild(tile.tile)
+                this.tileStage.addChild(tile.tile)
             }
         }
 
-        this.stage.addChild(this.background)
-        this.stage.addChild(this.foreground)
+        this.stage.addChild(this.tileStage)
+        this.stage.addChild(this.entityStage)
+    }
+
+    isInboundsPos(position: Position) {
+        return (0 <= position.x && position.x < this.rows && 0 <= position.y && position.y < this.cols)
+    }
+
+    isInboundsCoord(x: number, y: number) {
+        return (0 <= x && x < this.rows && 0 <= y && y < this.cols)
     }
 }
 

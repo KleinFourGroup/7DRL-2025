@@ -8,6 +8,8 @@ import { Camera } from "./camera"
 import { KeyframedAnimation, createMessageAnimation } from "./animation"
 import { createMoveAction, TICK_GRANULARITY } from "./action"
 import { PerfManager } from "./perf"
+import { AIComponent } from "./components"
+import { randomWalkAI } from "./ai"
     
 const ROWS = 41
 const COLS = 21
@@ -73,6 +75,7 @@ class GameScene implements Scene {
         this.ind = -1
         
         this.character = new Entity("@")
+        this.character.addComponents(new AIComponent(randomWalkAI))
         this.character.setScene(this)
         this.character.currLoc = {
             x: 20,
@@ -82,7 +85,7 @@ class GameScene implements Scene {
         this.characterAnimation = createMessageAnimation(this.character, MESSAGE, 200)
         this.characterAnimation.init()
 
-        this.gameMap.foreground.addChild(this.character.sprite.sprite)
+        this.gameMap.entityStage.addChild(this.character.sprite.sprite)
         this.camera.innerStage.addChild(this.gameMap.stage)
 
         this.stage.addChild(this.camera.outerStage)
@@ -105,41 +108,8 @@ class GameScene implements Scene {
 
     tickAI() {
         if (this.character.actor.isIdle()) {
-            let oldLoc = {...this.character.currLoc}
-            let newLoc = {...this.character.currLoc}
-            let searching = true
-            while (searching) {
-                let rand = Math.floor(Math.random() * 4)
-                let dx = 0
-                let dy = 0
-                switch (rand) {
-                    case 0:
-                        dx = -1
-                        break
-                    case 1:
-                        dy = 1
-                        break
-                    case 2:
-                        dx = 1
-                        break
-                    case 3:
-                        dy = -1
-                        break
-                    default:
-                        console.error("Uh oh...")
-                }
-        
-                if (0 <= oldLoc.x + dx && oldLoc.x + dx < ROWS && 0 <= oldLoc.y + dy && oldLoc.y + dy < COLS) {
-                    newLoc.x += dx
-                    newLoc.y += dy
-                    searching = false
-                }
-            }
-
-            let action = createMoveAction(this.character, oldLoc, newLoc, Math.ceil(600 / this.tickLength))
-            this.character.actor.queueAction(action)
+            this.character.getComponent(AIComponent).runAI()
         }
-
     }
 
     tick(deltaMS: number) {

@@ -12,6 +12,8 @@ type Position = {
     y: number
 }
 
+type ClassConstructor<T> = new(...args: any[]) => T
+
 abstract class Component {
     static name: string
     entity: Entity
@@ -48,7 +50,7 @@ class Entity {
         this.scene = scene
     }
 
-    getComponent<Comp extends Component>(comp: new(...args: any[]) => Comp): Comp {
+    getComponent<Comp extends Component>(comp: ClassConstructor<Comp>): Comp {
         let name = (comp as typeof Component).name
         if (this.components.hasOwnProperty(name)) {
             return this.components[name] as Comp
