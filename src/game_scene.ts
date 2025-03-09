@@ -1,6 +1,6 @@
 import { Container, Ticker, Text, Rectangle, Application } from "pixi.js"
 import { Scene, SceneStatus } from "./scenes"
-import { Entity } from "./entities"
+import { Entity } from "./ecs"
 import { GameMap, randomTiles } from "./map"
 import { TILE_SIZE } from "./text_sprite"
 import { COLORS } from "./colors"
@@ -72,7 +72,8 @@ class GameScene implements Scene {
         this.gameMap = new GameMap(ROWS, COLS, backgroundTiles)
         this.ind = -1
         
-        this.character = new Entity("@@", this)
+        this.character = new Entity("@")
+        this.character.setScene(this)
         this.character.currLoc = {
             x: 20,
             y: 10

@@ -1,5 +1,5 @@
 import { createMoveAnimation, KeyframedAnimation } from "./animation"
-import { Entity, Position } from "./entities"
+import { Entity, Position } from "./ecs"
 import { GameScene } from "./game_scene"
 
 const TICK_GRANULARITY = 100

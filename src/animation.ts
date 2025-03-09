@@ -1,4 +1,4 @@
-import { Entity, Position } from "./entities";
+import { Entity, Position } from "./ecs";
 import { GameScene } from "./game_scene";
 import { TILE_SIZE } from "./text_sprite";
 
@@ -82,7 +82,7 @@ class KeyframedAnimation {
             // We aren't done and we had more frames left
             if (processedTime < this.elapsed && this.lastKeyframe < this.animation.keyframes.length - 1) {
                 // console.log(`Processing between frames ${this.lastKeyframe}-${this.lastKeyframe + 1}`)
-                
+
                 let overflow = this.elapsed - this.animation.keyframes[this.lastKeyframe]
                 processedTime = this.elapsed
                 if (this.animation.betweenAnimations[this.lastKeyframe] !== null) {

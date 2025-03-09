@@ -1,5 +1,5 @@
 import { CompoundAction, TICK_GRANULARITY, TickAction } from "./action"
-import { Entity } from "./entities"
+import { Entity } from "./ecs"
 
 class Actor {
     entity: Entity
